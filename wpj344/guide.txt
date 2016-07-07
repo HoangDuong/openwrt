@@ -1,0 +1,58 @@
+1. Download source code:
+	cd ~/
+	git clone https://github.com/OSPro/wpj344_kernel.git
+	git clone https://github.com/OSPro/wpj344_toolchain.git
+	git clone https://github.com/OSPro/wpj344_config.git
+	git clone https://github.com/OSPro/wpj344_compatwireless.git
+
+2. Add Toolchain path:
+- Locate the toolchain binaries in the ~/wpj344_toolchain/bin/ directory
+- Add that directory to the PATH environment variable:
+	PATH=$PATH:(your toolchain/bin directory here)
+- Export variable environment:
+	# Set up paths and environment for cross compiling for openwrt kernel
+	export STAGING_DIR=~/
+	export TOOLCHAIN_DIR=~/wpj344_toolchain
+	export LDCFLAGS=$TOOLCHAIN_DIR/usr/lib
+	export LD_LIBRARY_PATH=$TOOLCHAIN_DIR/usr/lib
+	export PATH=$TOOLCHAIN_DIR/bin:$PATH
+	export ARCH=mips
+	export CROSS_COMPILE=~/wpj344_toolchain/bin/mips-openwrt-linux-uclibc-
+
+3. Copy new configuration file to kernel main folder:
+	cd ~/wpj344_config
+	cp .config ~/wpj344_kernel
+
+4. Check configuration of Machine and ath10k from kernel menuconfig:
+- Enter kernel source folder:
+	cd ~/wpj344_kernel
+	make menuconfig
+
+- Goto "Machine selection -> System type". Ensure that "Atheros AR71xx/AR724X/AR913X based boards" is selected.
+- Goto "Machine selection -> Atheros Atheros AR71xx/AR724X/AR913X machine selection". Ensure that "Compex WPJ344 board support" is selected.
+
+5. Make ath10k driver:
+	cd ~/wpj344_compatwireless
+	export KERNEL_DIR=~/wpj344_kernel
+	export KLIB=${KERNEL_DIR}
+	export KLIB_BUILD=${KERNEL_DIR}
+	make ARCH=mips
+
+6. Move driver modules to target
+- Check 9 modules is existed on paths below:
+  wpj344_compatwireless/compat/compat.ko
+  wpj344_compatwireless/drivers/net/wireless/ath/ath.ko
+  wpj344_compatwireless/drivers/net/wireless/ath/ath10k/ath10k_core.ko
+  wpj344_compatwireless/drivers/net/wireless/ath/ath10k/ath10k_pci.ko
+  wpj344_compatwireless/drivers/net/wireless/ath/ath9k/ath9k.ko
+  wpj344_compatwireless/drivers/net/wireless/ath/ath9k/ath9k_common.ko
+  wpj344_compatwireless/drivers/net/wireless/ath/ath9k/ath9k_hw.ko
+  wpj344_compatwireless/net/mac80211/mac80211.ko
+  wpj344_compatwireless/net/wireless/cfg80211.ko
+
+- Copy (override) 9 files to /lib/modules/3.18.29 folder at target board
+
+
+
+
+
